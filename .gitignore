@@ -1,0 +1,59 @@
+## .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.DotSettings.user
+
+## NuGet packages
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Publish artifacts
+publish/
+
+## IDE files
+.idea/
+*.sln.iml
+.vscode/
+*.code-workspace
+
+## OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Test Results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+## Secrets - never commit API keys
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
