@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "OwnerAI.Host.Desktop (Unpackaged)": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

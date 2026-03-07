@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="OwnerAI.Host.Desktop.Views.SchedulerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:abs="using:OwnerAI.Shared.Abstractions"
+    xmlns:models="using:OwnerAI.Host.Desktop.Models"
+    xmlns:conv="using:OwnerAI.Host.Desktop.Converters">
+
+    <Page.Resources>
+        <conv:StringToVisibilityConverter x:Key="StringToVisibility" />
+        <conv:NextRunAtToTextConverter x:Key="NextRunAtToText" />
+        <conv:NullableDateTimeToVisibilityConverter x:Key="NullableDateTimeToVisibility" />
+        <conv:ExecutionSuccessToGlyphConverter x:Key="ExecutionSuccessToGlyph" />
+        <conv:ExecutionSuccessToBrushConverter x:Key="ExecutionSuccessToBrush" />
+        <conv:ExecutionSuccessToLabelConverter x:Key="BoolToStatusText" />
+        <conv:ExecutionSuccessToBorderBrushConverter x:Key="ExecutionSuccessToBorderBrush" />
+        <conv:DurationToTextConverter x:Key="DurationToText" />
+        <conv:DateTimeOffsetToShortTextConverter x:Key="DateTimeOffsetToShortText" />
+
+        <DataTemplate x:Key="EvolutionPlanStepTemplate" x:DataType="models:EvolutionPlanStepViewItem">
+            <StackPanel Spacing="2" Margin="0,0,0,8">
+                <TextBlock Text="{x:Bind TitleText}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" />
+                <TextBlock FontSize="11" Opacity="0.62">
+                    <Run Text="{x:Bind StepTypeText}" />
+                    <Run Text=" | " />
+                    <Run Text="{x:Bind StatusText}" />
+                </TextBlock>
+                <TextBlock Text="{x:Bind Result}" FontSize="11" Opacity="0.58" TextWrapping="Wrap"
+                           Visibility="{x:Bind Result, Converter={StaticResource StringToVisibility}}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="PlannedEvolutionGapTemplate" x:DataType="models:EvolutionPlannedGapViewItem">
+            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,2">
+                <Expander>
+                    <Expander.Header>
+                        <StackPanel Spacing="4">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{x:Bind Description}" FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap" />
+                                <Border Background="{StaticResource OwnerAIPrimaryBrush}" CornerRadius="4" Padding="6,2">
+                                    <TextBlock Text="{x:Bind CategoryText}" FontSize="10" Foreground="White" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="{x:Bind ProgressText}" FontSize="11" Opacity="0.65" TextWrapping="Wrap" />
+                            <TextBlock FontSize="11" Opacity="0.55">
+                                <Run Text="状态：" />
+                                <Run Text="{x:Bind StatusText}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Expander.Header>
+
+                    <StackPanel Spacing="8" Margin="0,8,0,0">
+                        <TextBlock FontSize="11" Opacity="0.55">
+                            <Run Text="Gap ID: " />
+                            <Run Text="{x:Bind GapId}" />
+                        </TextBlock>
+                        <TextBlock Text="{x:Bind LastAttemptLog}" FontSize="11" Opacity="0.6" TextWrapping="Wrap"
+                                   Visibility="{x:Bind LastAttemptLog, Converter={StaticResource StringToVisibility}}" />
+                        <ItemsControl ItemsSource="{x:Bind Steps}" ItemTemplate="{StaticResource EvolutionPlanStepTemplate}" />
+                    </StackPanel>
+                </Expander>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="TaskCardTemplate" x:DataType="abs:ScheduledTask">
+            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,4">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <FontIcon Grid.Column="0" FontSize="20" VerticalAlignment="Top" Margin="0,2,12,0"
+                              Glyph="{x:Bind Status, Converter={StaticResource TaskStatusToGlyph}}"
+                              Foreground="{x:Bind Status, Converter={StaticResource TaskStatusToBrush}}" />
+
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="14" />
+                            <Border Background="{x:Bind Status, Converter={StaticResource TaskStatusToBadgeBrush}}"
+                                    CornerRadius="4" Padding="6,2">
+                                <TextBlock Text="{x:Bind Status, Converter={StaticResource TaskStatusToLabel}}"
+                                           FontSize="10" Foreground="White" />
+                            </Border>
+                            <Border Background="{StaticResource OwnerAIPrimaryBrush}"
+                                    CornerRadius="4" Padding="6,2">
+                                <TextBlock FontSize="10" Foreground="White">
+                                    <Run Text="P" /><Run Text="{x:Bind Priority}" />
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock FontSize="12" Opacity="0.6">
+                                <Run Text="{x:Bind Source}" />
+                                <Run Text=" | 执行 " />
+                                <Run Text="{x:Bind RunCount}" />
+                                <Run Text=" 次" />
+                            </TextBlock>
+                        </StackPanel>
+
+                        <TextBlock Text="{x:Bind Description}"
+                                   FontSize="12" Opacity="0.5" TextTrimming="CharacterEllipsis"
+                                   MaxLines="1" />
+
+                        <TextBlock FontSize="11" Opacity="0.4"
+                                   Text="{x:Bind MessageTemplate}"
+                                   TextTrimming="CharacterEllipsis" MaxLines="1" />
+
+                        <TextBlock FontSize="11" Opacity="0.65"
+                                   Text="{x:Bind LastResult, Mode=OneWay}"
+                                   TextWrapping="Wrap" MaxLines="2"
+                                   Visibility="{x:Bind LastResult, Mode=OneWay, Converter={StaticResource StringToVisibility}}" />
+
+                        <TextBlock FontSize="11" Opacity="0.55"
+                                   Text="{x:Bind NextRunAt, Mode=OneWay, Converter={StaticResource NextRunAtToText}}"
+                                   Visibility="{x:Bind NextRunAt, Mode=OneWay, Converter={StaticResource NullableDateTimeToVisibility}}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Top">
+                        <Button Padding="6,4" ToolTipService.ToolTip="立即执行"
+                                Tag="{x:Bind}"
+                                Click="OnRunNowClick">
+                            <FontIcon Glyph="&#xE768;" FontSize="12" Foreground="{StaticResource OwnerAIPrimaryBrush}" />
+                        </Button>
+                        <Button Padding="6,4" ToolTipService.ToolTip="编辑"
+                                Tag="{x:Bind}"
+                                Click="OnEditClick">
+                            <FontIcon Glyph="&#xE70F;" FontSize="12" />
+                        </Button>
+                        <Button Padding="6,4" ToolTipService.ToolTip="暂停"
+                                Tag="{x:Bind}"
+                                Click="OnPauseClick"
+                                Visibility="{x:Bind Status, Converter={StaticResource TaskStatusToVisibility}, ConverterParameter=Pause}">
+                            <FontIcon Glyph="&#xE769;" FontSize="12" />
+                        </Button>
+                        <Button Padding="6,4" ToolTipService.ToolTip="恢复"
+                                Tag="{x:Bind}"
+                                Click="OnResumeClick"
+                                Visibility="{x:Bind Status, Converter={StaticResource TaskStatusToVisibility}, ConverterParameter=Resume}">
+                            <FontIcon Glyph="&#xE768;" FontSize="12" />
+                        </Button>
+                        <Button Padding="6,4" ToolTipService.ToolTip="取消"
+                                Tag="{x:Bind}"
+                                Click="OnCancelClick"
+                                Visibility="{x:Bind Status, Converter={StaticResource TaskStatusToVisibility}, ConverterParameter=Cancel}">
+                            <FontIcon Glyph="&#xE711;" FontSize="12" />
+                        </Button>
+                        <Button Padding="6,4" ToolTipService.ToolTip="删除"
+                                Tag="{x:Bind}"
+                                Click="OnDeleteClick">
+                            <FontIcon Glyph="&#xE74D;" FontSize="12" Foreground="#EF4444" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid RowDefinitions="Auto,*" Padding="24">
+
+        <!-- 页面标题 + 状态 -->
+        <Grid ColumnDefinitions="*,Auto">
+            <StackPanel>
+                <TextBlock Text="任务管理" Style="{StaticResource TitleTextBlockStyle}" />
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                    <FontIcon Glyph="&#xEA81;" FontSize="12"
+                              Foreground="{StaticResource OwnerAIPrimaryBrush}"
+                              Visibility="{x:Bind ViewModel.IsSchedulerActive, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind ViewModel.SchedulerPhase, Mode=OneWay}"
+                               FontSize="12" Opacity="0.7" />
+                    <TextBlock Text="—" FontSize="12" Opacity="0.4" />
+                    <TextBlock Text="{x:Bind ViewModel.StatsText, Mode=OneWay}"
+                               FontSize="12" Opacity="0.6" />
+                </StackPanel>
+            </StackPanel>
+            <Button Grid.Column="1" VerticalAlignment="Top"
+                    Command="{x:Bind ViewModel.RefreshCommand}"
+                    ToolTipService.ToolTip="刷新">
+                <FontIcon Glyph="&#xE72C;" FontSize="14" />
+            </Button>
+        </Grid>
+
+        <!-- Tab 切换 -->
+        <Pivot Grid.Row="1" Margin="0,12,0,0"
+               SelectedIndex="{x:Bind ViewModel.SelectedTabIndex, Mode=TwoWay}">
+
+            <!-- ===== 任务列表 ===== -->
+            <PivotItem Header="任务列表">
+                <ScrollViewer Margin="0,8,0,0">
+                    <StackPanel Spacing="12">
+                        <Border Padding="16"
+                                CornerRadius="10"
+                                BorderThickness="1"
+                                BorderBrush="{StaticResource OwnerAIPrimaryBrush}"
+                                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                Visibility="{x:Bind ViewModel.HasEvolutionPipelineTasks, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                            <StackPanel Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE945;" Foreground="{StaticResource OwnerAIPrimaryBrush}" />
+                                    <TextBlock Text="进化流水线" FontSize="15" FontWeight="SemiBold" />
+                                </StackPanel>
+                                <TextBlock Text="按“规划 → 执行 → 验收”三个阶段观察内置进化任务状态。"
+                                           FontSize="12" Opacity="0.65" TextWrapping="Wrap" />
+                                <TextBlock Text="{x:Bind ViewModel.EvolutionOverviewText, Mode=OneWay}"
+                                           FontSize="12" FontWeight="SemiBold"
+                                           Opacity="0.78" TextWrapping="Wrap" />
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{x:Bind ViewModel.NextPlanningGapText, Mode=OneWay}"
+                                               FontSize="11" Opacity="0.65" TextWrapping="Wrap" />
+                                    <TextBlock Text="{x:Bind ViewModel.NextImplementationGapText, Mode=OneWay}"
+                                               FontSize="11" Opacity="0.65" TextWrapping="Wrap" />
+                                    <TextBlock Text="{x:Bind ViewModel.NextVerificationGapText, Mode=OneWay}"
+                                               FontSize="11" Opacity="0.65" TextWrapping="Wrap" />
+                                </StackPanel>
+                                <StackPanel Spacing="6"
+                                            Visibility="{x:Bind ViewModel.HasPlannedEvolutionGaps, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="已规划缺口 / 技能计划" FontSize="13" FontWeight="SemiBold" />
+                                    <ListView ItemsSource="{x:Bind ViewModel.PlannedEvolutionGaps, Mode=OneWay}"
+                                              ItemTemplate="{StaticResource PlannedEvolutionGapTemplate}"
+                                              SelectionMode="None"
+                                              MaxHeight="420" />
+                                </StackPanel>
+                                <ListView ItemsSource="{x:Bind ViewModel.EvolutionPipelineTasks, Mode=OneWay}"
+                                          ItemTemplate="{StaticResource TaskCardTemplate}"
+                                          SelectionMode="None" />
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Spacing="8"
+                                    Visibility="{x:Bind ViewModel.HasRegularTasks, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="其他任务" FontWeight="SemiBold" FontSize="14" />
+                            <ListView ItemsSource="{x:Bind ViewModel.RegularTasks, Mode=OneWay}"
+                                      ItemTemplate="{StaticResource TaskCardTemplate}"
+                                      SelectionMode="None" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+
+            <!-- ===== 创建任务 ===== -->
+            <PivotItem Header="创建 / 编辑任务">
+                <ScrollViewer Margin="0,8,0,0">
+                    <StackPanel Spacing="12" MaxWidth="600">
+
+                        <!-- 编辑模式提示 -->
+                        <InfoBar IsOpen="{x:Bind ViewModel.IsEditing, Mode=OneWay}"
+                                 Title="编辑模式"
+                                 Message="修改任务属性后点击保存，或点击取消返回"
+                                 Severity="Warning"
+                                 IsClosable="False" />
+
+                        <TextBox Header="任务名称" PlaceholderText="如：每日新闻汇总"
+                                 Text="{x:Bind ViewModel.NewTaskName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <TextBox Header="执行消息（发送给 AI 的提示词）" AcceptsReturn="True"
+                                 MinHeight="80" TextWrapping="Wrap"
+                                 PlaceholderText="如：搜索今天的科技新闻并生成摘要"
+                                 Text="{x:Bind ViewModel.NewTaskMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <ComboBox Header="任务类型" Width="200"
+                                  SelectedIndex="{x:Bind ViewModel.SelectedTypeIndex, Mode=TwoWay}">
+                            <ComboBoxItem Content="一次性" />
+                            <ComboBoxItem Content="循环" />
+                            <ComboBoxItem Content="Cron 定时" />
+                        </ComboBox>
+
+                        <!-- 循环间隔 (type=Recurring) -->
+                        <NumberBox Header="循环间隔（分钟）"
+                                   Value="{x:Bind ViewModel.NewTaskIntervalMinutes, Mode=TwoWay}"
+                                   Minimum="1" Maximum="99999"
+                                   SpinButtonPlacementMode="Compact" Width="200"
+                                   Visibility="{x:Bind ViewModel.ShowIntervalInput, Mode=OneWay}" />
+
+                        <!-- Cron 表达式 (type=Cron) -->
+                        <StackPanel Spacing="4"
+                                    Visibility="{x:Bind ViewModel.ShowCronInput, Mode=OneWay}">
+                            <TextBox Header="Cron 表达式" Width="300" HorizontalAlignment="Left"
+                                     PlaceholderText="分 时 日 月 周 (如 0 9 * * *)"
+                                     Text="{x:Bind ViewModel.NewTaskCron, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="{x:Bind ViewModel.CronPreview, Mode=OneWay}"
+                                       FontSize="12" Opacity="0.6" />
+                            <TextBlock FontSize="11" Opacity="0.4" TextWrapping="Wrap">
+                                <Run Text="示例: " />
+                                <Run Text="0 9 * * * (每天9:00) | */30 * * * * (每30分钟) | 0 8 * * 1-5 (工作日8:00)" />
+                            </TextBlock>
+                        </StackPanel>
+
+                        <NumberBox Header="优先级 (1-5，5 最高)"
+                                   Value="{x:Bind ViewModel.NewTaskPriority, Mode=TwoWay}"
+                                   Minimum="1" Maximum="5"
+                                   SpinButtonPlacementMode="Compact" Width="200" />
+
+                        <TextBox Header="描述（可选）" PlaceholderText="任务用途描述"
+                                 Text="{x:Bind ViewModel.NewTaskDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <!-- 提示消息 -->
+                        <InfoBar IsOpen="{x:Bind ViewModel.ShowFormMessage, Mode=OneWay}"
+                                 Message="{x:Bind ViewModel.FormMessage, Mode=OneWay}"
+                                 IsClosable="True"
+                                 Severity="Informational" />
+
+                        <Button Command="{x:Bind ViewModel.CreateTaskCommand}"
+                                Style="{ThemeResource AccentButtonStyle}"
+                                HorizontalAlignment="Left"
+                                Margin="0,8,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE710;" FontSize="14" />
+                                <TextBlock Text="{x:Bind ViewModel.FormButtonText, Mode=OneWay}" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{x:Bind ViewModel.CancelEditCommand}"
+                                HorizontalAlignment="Left"
+                                Visibility="{x:Bind ViewModel.ShowCancelEdit, Mode=OneWay}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE711;" FontSize="14" />
+                                <TextBlock Text="取消编辑" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+
+            <!-- ===== 执行历史 ===== -->
+            <PivotItem Header="执行历史">
+                <Grid RowDefinitions="*,Auto" Margin="0,8,0,0">
+                    <!-- 历史列表 -->
+                    <ListView ItemsSource="{x:Bind ViewModel.HistoryRecords, Mode=OneWay}"
+                              SelectionMode="Single"
+                              SelectionChanged="OnHistorySelectionChanged">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="abs:TaskExecutionRecord">
+                                <Border BorderBrush="{x:Bind Success, Converter={StaticResource ExecutionSuccessToBorderBrush}}"
+                                        BorderThickness="3,1,1,1" CornerRadius="6" Padding="12" Margin="0,2">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <!-- 成功/失败图标 -->
+                                        <FontIcon Grid.Column="0" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"
+                                                  Glyph="{x:Bind Success, Converter={StaticResource ExecutionSuccessToGlyph}}"
+                                                  Foreground="{x:Bind Success, Converter={StaticResource ExecutionSuccessToBrush}}" />
+
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{x:Bind TaskName}" FontWeight="SemiBold" FontSize="13" />
+                                                <Border CornerRadius="4" Padding="6,2"
+                                                        Background="{x:Bind Success, Converter={StaticResource ExecutionSuccessToBrush}}">
+                                                    <TextBlock FontSize="10" Foreground="White"
+                                                               Text="{x:Bind Success, Converter={StaticResource BoolToStatusText}}" />
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock Text="{x:Bind Summary}" FontSize="12" Opacity="0.6"
+                                                       TextTrimming="CharacterEllipsis" MaxLines="2" />
+                                            <TextBlock Text="{x:Bind PrimaryFailureSummary}" FontSize="11" Opacity="0.55"
+                                                       TextTrimming="CharacterEllipsis" MaxLines="1"
+                                                       Visibility="{x:Bind PrimaryFailureSummary, Converter={StaticResource StringToVisibility}}" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <FontIcon Glyph="&#xE916;" FontSize="10" Opacity="0.5" />
+                                                <TextBlock FontSize="11" Opacity="0.5">
+                                                    <Run Text="工具 ×" /><Run Text="{x:Bind ToolCallCount}" />
+                                                </TextBlock>
+                                            </StackPanel>
+                                            <TextBlock FontSize="11" Opacity="0.55" HorizontalAlignment="Right"
+                                                       Text="{x:Bind Duration, Converter={StaticResource DurationToText}}" />
+                                            <TextBlock FontSize="11" Opacity="0.5" HorizontalAlignment="Right"
+                                                       Text="{x:Bind ExecutedAt, Converter={StaticResource DateTimeOffsetToShortText}}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <!-- 执行详情面板 -->
+                    <Border Grid.Row="1"
+                            Visibility="{x:Bind ViewModel.HasSelectedRecord, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                            BorderBrush="{StaticResource OwnerAIPrimaryBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,8,0,0"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            MaxHeight="360">
+                        <Grid RowDefinitions="Auto,*">
+                            <!-- 详情标题栏 -->
+                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="16"
+                                              Glyph="{x:Bind ViewModel.SelectedHistoryRecord.Success, Mode=OneWay, Converter={StaticResource ExecutionSuccessToGlyph}}"
+                                              Foreground="{x:Bind ViewModel.SelectedHistoryRecord.Success, Mode=OneWay, Converter={StaticResource ExecutionSuccessToBrush}}" />
+                                    <TextBlock Text="执行详情" FontWeight="SemiBold" FontSize="14" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12"
+                                            Margin="16,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock FontSize="12" Opacity="0.6"
+                                               Text="{x:Bind ViewModel.SelectedHistoryRecord.TaskName, Mode=OneWay}" />
+                                    <Border CornerRadius="4" Padding="6,2"
+                                            Background="{x:Bind ViewModel.SelectedHistoryRecord.Success, Mode=OneWay, Converter={StaticResource ExecutionSuccessToBrush}}">
+                                        <TextBlock FontSize="10" Foreground="White"
+                                                   Text="{x:Bind ViewModel.SelectedHistoryRecord.Success, Mode=OneWay, Converter={StaticResource BoolToStatusText}}" />
+                                    </Border>
+                                    <Border CornerRadius="4" Padding="6,2"
+                                            Background="{StaticResource OwnerAIPrimaryBrush}">
+                                        <TextBlock FontSize="10" Foreground="White">
+                                            <Run Text="工具调用 " />
+                                            <Run Text="{x:Bind ViewModel.SelectedHistoryRecord.ToolCallCount, Mode=OneWay}" />
+                                            <Run Text=" 次" />
+                                        </TextBlock>
+                                    </Border>
+                                    <Border CornerRadius="4" Padding="6,2"
+                                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                                        <TextBlock FontSize="10"
+                                                   Text="{x:Bind ViewModel.SelectedHistoryRecord.Duration, Mode=OneWay, Converter={StaticResource DurationToText}}" />
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+                                    <Button Padding="4" Background="Transparent"
+                                            BorderThickness="0" Click="OnCopyDetailLogClick"
+                                            ToolTipService.ToolTip="复制完整日志">
+                                        <FontIcon Glyph="&#xE8C8;" FontSize="12" />
+                                    </Button>
+                                    <Button Padding="4" Background="Transparent"
+                                            BorderThickness="0" Click="OnCloseDetailClick"
+                                            ToolTipService.ToolTip="关闭详情">
+                                        <FontIcon Glyph="&#xE711;" FontSize="12" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 完整执行日志 -->
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="{x:Bind ViewModel.SelectedHistoryRecord.PrimaryFailureSummary, Mode=OneWay}"
+                                               FontSize="12" FontWeight="SemiBold"
+                                               Foreground="#EF4444"
+                                               TextWrapping="Wrap"
+                                               Visibility="{x:Bind ViewModel.SelectedHistoryRecord.PrimaryFailureSummary, Mode=OneWay, Converter={StaticResource StringToVisibility}}" />
+
+                                    <Border Padding="10" CornerRadius="6"
+                                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                            Visibility="{x:Bind ViewModel.SelectedHistoryRecord.ToolOverview, Mode=OneWay, Converter={StaticResource StringToVisibility}}">
+                                        <TextBlock Text="{x:Bind ViewModel.SelectedHistoryRecord.ToolOverview, Mode=OneWay}"
+                                                   FontSize="12" TextWrapping="Wrap"
+                                                   IsTextSelectionEnabled="True" Opacity="0.8" />
+                                    </Border>
+
+                                    <TextBlock Text="{x:Bind ViewModel.SelectedHistoryRecord.FullLog, Mode=OneWay}"
+                                               FontSize="12" FontFamily="Consolas"
+                                               TextWrapping="Wrap" IsTextSelectionEnabled="True"
+                                               Opacity="0.85" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </PivotItem>
+        </Pivot>
+    </Grid>
+
+</Page>

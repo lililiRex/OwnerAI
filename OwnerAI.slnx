@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OwnerAI.Shared/OwnerAI.Shared.csproj" />
+    <Project Path="src/OwnerAI.Configuration/OwnerAI.Configuration.csproj" />
+    <Project Path="src/OwnerAI.Gateway/OwnerAI.Gateway.csproj" />
+    <Project Path="src/OwnerAI.Agent/OwnerAI.Agent.csproj" />
+    <Project Path="src/OwnerAI.Agent.Tools/OwnerAI.Agent.Tools.csproj" />
+    <Project Path="src/OwnerAI.Security/OwnerAI.Security.csproj" />
+    <Project Path="src/OwnerAI.Host.Cli/OwnerAI.Host.Cli.csproj" />
+    <Project Path="src/OwnerAI.Host.Desktop/OwnerAI.Host.Desktop.csproj">
+      <Configuration Solution="Debug|Any CPU" Project="Debug|x64" />
+      <Configuration Solution="Release|Any CPU" Project="Release|x64" />
+      <Platform Solution="Debug|*" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OwnerAI.Gateway.Tests/OwnerAI.Gateway.Tests.csproj" />
+    <Project Path="tests/OwnerAI.Agent.Tests/OwnerAI.Agent.Tests.csproj" />
+    <Project Path="tests/OwnerAI.Security.Tests/OwnerAI.Security.Tests.csproj" />
+  </Folder>
+</Solution>

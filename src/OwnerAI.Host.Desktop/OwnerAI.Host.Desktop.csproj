@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <RootNamespace>OwnerAI.Host.Desktop</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <ApplicationIcon>AppIcon.ico</ApplicationIcon>
+
+    <!-- 抑制 WinUI 特有的分析器噪音 -->
+    <NoWarn>$(NoWarn);WMC1501</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OwnerAI.Shared\OwnerAI.Shared.csproj" />
+    <ProjectReference Include="..\OwnerAI.Configuration\OwnerAI.Configuration.csproj" />
+    <ProjectReference Include="..\OwnerAI.Gateway\OwnerAI.Gateway.csproj" />
+    <ProjectReference Include="..\OwnerAI.Agent\OwnerAI.Agent.csproj" />
+    <ProjectReference Include="..\OwnerAI.Agent.Tools\OwnerAI.Agent.Tools.csproj" />
+    <ProjectReference Include="..\OwnerAI.Security\OwnerAI.Security.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="AppIcon.ico" />
+  </ItemGroup>
+
+  </Project>

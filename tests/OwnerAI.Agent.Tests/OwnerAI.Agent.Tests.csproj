@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>OwnerAI.Agent.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OwnerAI.Agent\OwnerAI.Agent.csproj" />
+    <ProjectReference Include="..\..\src\OwnerAI.Agent.Tools\OwnerAI.Agent.Tools.csproj" />
+    <ProjectReference Include="..\..\src\OwnerAI.Shared\OwnerAI.Shared.csproj" />
+    <ProjectReference Include="..\..\src\OwnerAI.Configuration\OwnerAI.Configuration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="NSubstitute" />
+  </ItemGroup>
+
+</Project>
