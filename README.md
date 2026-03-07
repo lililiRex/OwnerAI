@@ -756,16 +756,6 @@ OwnerAI 特别适合以下方向：
 
 本仓库建议在开源发布时补充正式许可证文件（如 `MIT` 或 `Apache-2.0`）。
 
-如果你准备将 OwnerAI 面向全球开源，建议同时补充：
-
-- `LICENSE`
-- `CONTRIBUTING.md`
-- `CODE_OF_CONDUCT.md`
-- `SECURITY.md`
-- GitHub Actions CI
-- 演示截图或 GIF
-
----
 
 ## English
 
@@ -1497,3 +1487,4 @@ For public open-source release, it is strongly recommended to add:
 If this project resonates with you, please consider starring it, testing it, extending it, or building on top of it.
 
 Every issue, every PR, every plugin, every test, every document page, and every thoughtful review helps move the ecosystem forward.
+
