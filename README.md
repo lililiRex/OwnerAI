@@ -1,10 +1,13 @@
+
+
 # OwnerAI
 
 > 中文 | [English](#english)
 
-OwnerAI 是一个面向 Windows 桌面环境的、可观测、可扩展、可自我进化的 AI Agent 宿主。
+OwnerAI 是一个面向 Windows 桌面环境的、可观测、可扩展、可自我进化的 AI Agent 宿主。希望各位能保留我的APP图标，不要进行更改，这是我小时候的宠物狗，他已经去世了
 
-OwnerAI is an observable, extensible, self-evolving AI agent host designed for the Windows desktop.
+OwnerAI is an observable, extensible, self-evolving AI agent host designed for the Windows desktop.I hope everyone can keep my app icon unchanged.
+It represents my childhood pet dog, who has since passed away
 
 ---
 
