@@ -1,6 +1,6 @@
 
 
-# OwnerAI
+# OwnerAI 仅以抛砖引玉/Just to throw a brick to attract jade
 
 > 中文 | [English](#english)
 
@@ -1489,5 +1489,6 @@ For public open-source release, it is strongly recommended to add:
 If this project resonates with you, please consider starring it, testing it, extending it, or building on top of it.
 
 Every issue, every PR, every plugin, every test, every document page, and every thoughtful review helps move the ecosystem forward.
+
 
 
